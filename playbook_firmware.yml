@@ -1,0 +1,42 @@
+---
+- hosts: all
+  gather_facts: false
+  become: true
+  become_exe: "/opt/boksm/bin/suexec"
+
+  tasks:
+    - name: Gather only hardware facts
+      ansible.builtin.setup:
+        gather_subset:
+          - hardware
+        gather_timeout: 15 # Default 10 seconds 
+
+    - name: Set lowercase system vendor
+      ansible.builtin.set_fact:
+        system_vendor: "{{ ansible_facts['system_vendor'] | lower }}"
+
+    - name: Debug system vendor
+      ansible.builtin.debug:
+        var: system_vendor
+
+    - name: Include Dell firmware role if system is Dell
+      ansible.builtin.include_role:
+        name: dell_firmware_updater
+      when: "'dell' in system_vendor"
+
+    - name: Include HPE firmware role if system is HP or HPE
+      ansible.builtin.include_role:
+        name: hp_firmware_updater
+      when: >
+        'hewlett-packard' in system_vendor or
+        'hp' in system_vendor or
+        'hpe' in system_vendor
+
+    - name: Warn if system vendor is not Dell or HPE
+      ansible.builtin.debug:
+        msg: "System vendor '{{ system_vendor }}' is not a recognized Dell or HPE server. Skipping firmware update."
+      when: >
+        'dell' not in system_vendor and
+        'hewlett-packard' not in system_vendor and
+        'hp' not in system_vendor and
+        'hpe' not in system_vendor
