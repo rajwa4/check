@@ -9,11 +9,15 @@
       ansible.builtin.setup:
         gather_subset:
           - hardware
-        gather_timeout: 15 # Default 10 seconds 
+        gather_timeout: 15 # Default 10 seconds
+# debug print if needed
+#    - name: Print all facts YAML-style
+#      ansible.builtin.debug:
+#        msg: "{{ ansible_facts | to_nice_yaml }}"
 
     - name: Set lowercase system vendor (with fallback)
       ansible.builtin.set_fact:
-      system_vendor: "{{ (ansible_facts['system_vendor'] | default('unknown')) | lower }}"
+        system_vendor: "{{ (ansible_facts['system_vendor'] | trim | default('unknown', true)) | lower }}"
 
     - name: Debug system vendor
       ansible.builtin.debug:
