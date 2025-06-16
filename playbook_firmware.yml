@@ -11,9 +11,9 @@
           - hardware
         gather_timeout: 15 # Default 10 seconds 
 
-    - name: Set lowercase system vendor
+    - name: Set lowercase system vendor (with fallback)
       ansible.builtin.set_fact:
-        system_vendor: "{{ ansible_facts['system_vendor'] | lower }}"
+      system_vendor: "{{ (ansible_facts['system_vendor'] | default('unknown')) | lower }}"
 
     - name: Debug system vendor
       ansible.builtin.debug:
